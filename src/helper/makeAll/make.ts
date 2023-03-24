@@ -5,9 +5,13 @@ function makeFiles(
   folderName: string,
   name: string,
   props: object,
-  createDto: object,
-  updateDto: object,
+  createDto: object = {},
+  updateDto: object = {},
 ) {
+  createDto =
+    createDto ||
+    Object.fromEntries(Object.entries(props).map((i) => [i[0], i[1][0]]));
+
   // ALL FUNCTIONS
   let mkDir = path.resolve(__dirname, '..', '..', folderName);
   let readFromExample = (name: string) => {
@@ -47,8 +51,9 @@ function makeFiles(
 
   let writeUpdateDto = (content: string) => {
     let propsArea: string = '';
-    for (let i in updateDto) {
-      propsArea += `${i}?: ${updateDto[i]};\n\t`;
+    let dto = updateDto || createDto;
+    for (let i in dto) {
+      propsArea += `${i}?: ${dto[i]};\n\t`;
     }
     return content.replace(/'dto'/, propsArea);
   };
@@ -142,50 +147,99 @@ function makeFiles(
   }
 }
 
+// SPEC SERVICE
+makeFiles('spec-service', 'SpecService', {
+  spec_id: [
+    'mongoose.Schema.Types.ObjectId',
+    "[{ type: mongoose.Schema.Types.ObjectId, ref: 'Specialist' }]",
+  ],
+  service_id: [
+    'mongoose.Schema.Types.ObjectId',
+    "[{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }]",
+  ],
+  spec_service_price: ['string', ''],
+});
+
+// SERVICE
+makeFiles('service', 'Service', {
+  service_name: ['string', '{ required: true }'],
+  service_price: ['string', '{ required: true }'],
+});
+
+// QUEUE
+makeFiles('queue', 'Queue', {
+  spec_service_id: [
+    'mongoose.Schema.Types.ObjectId',
+    "[{ type: mongoose.Schema.Types.ObjectId, ref: 'SpecService' }]",
+  ],
+  client_id: [
+    'mongoose.Schema.Types.ObjectId',
+    "[{ type: mongoose.Schema.Types.ObjectId, ref: 'Client' }]",
+  ],
+  queue_date_time: ['string', '{ required:true }'],
+  queue_number: ['number', '{ required:true }'],
+});
+
+// QUEUE
 makeFiles(
-  'spec-service',
-  'SpecService',
+  'client',
+  'Client',
   {
-    spec_id: [
+    client_last_name: ['string', ''],
+    client_first_name: ['string', ''],
+    client_phone_number: ['string', '{ required:true }'],
+    client_info: ['string', ''],
+    client_photo: ['string', ''],
+    client_is_active: ['boolean', ''],
+    otp_id: [
       'mongoose.Schema.Types.ObjectId',
-      "[{ type: mongoose.Schema.Types.ObjectId, ref: 'Specialist' }]",
+      "[{ type: mongoose.Schema.Types.ObjectId, ref: 'SpecService' }]",
     ],
-    service_id: [
-      'mongoose.Schema.Types.ObjectId',
-      "[{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }]",
-    ],
-    spec_service_price: ['string', ''],
   },
-  {
-    spec_id: 'number',
-    service_id: 'number',
-    spec_service_price: 'string',
-  },
-  {
-    spec_id: 'number',
-    service_id: 'number',
-    spec_service_price: 'string',
-  },
+  { client_phone_number: ['string', '{ required:true }'] },
 );
 
-makeFiles(
-  'service',
-  'Service',
-  {
-    service_name: ['string', '{ required: true }'],
-    service_price: ['string', '{ required: true }'],
-  },
-  { service_name: 'string', service_price: 'string' },
-  { service_name: 'string', service_price: 'string' },
-);
+// OTP
+makeFiles('otp', 'Otp', {
+  otp: ['string', ''],
+  expiration_time: ['number', ''],
+  verified: ['boolean', ''],
+});
 
-makeFiles(
-  'service',
-  'Service',
-  {
-    service_name: ['string', '{ required: true }'],
-    service_price: ['string', '{ required: true }'],
-  },
-  { service_name: 'string', service_price: 'string' },
-  { service_name: 'string', service_price: 'string' },
-);
+// SPEC WORKING TIME
+makeFiles('spec-working-day', 'SpecWorkingDay', {
+  spec_id: [
+    'mongoose.Schema.Types.ObjectId',
+    "[{ type: mongoose.Schema.Types.ObjectId, ref: 'SpecService' }]",
+  ],
+  day_of_week: ['number', ''],
+  start_time: ['string', ''],
+  finish_time: ['string', ''],
+  rest_start_time: ['string', ''],
+  rest_finish_time: ['string', ''],
+});
+
+// TOKEN
+makeFiles('token', 'Token', {
+  table_name: ['string', ''],
+  user_id: [
+    'mongoose.Schema.Types.ObjectId',
+    "[{ type: mongoose.Schema.Types.ObjectId, ref: 'SpecService' }]",
+  ],
+  user_os: ['string', ''],
+  user_device: ['string', ''],
+  token: ['string', ''],
+});
+
+// ADMIN
+makeFiles('admin', 'Admin', {
+  table_name: ['string', ''],
+  user_id: [
+    'mongoose.Schema.Types.ObjectId',
+    "[{ type: mongoose.Schema.Types.ObjectId, ref: 'SpecService' }]",
+  ],
+  user_os: ['string', ''],
+  user_device: ['string', ''],
+  token: ['string', ''],
+});
+
